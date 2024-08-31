@@ -1,0 +1,12 @@
+trigger UpdateContactOnAccountNameChange on Account (after update) {
+    for (Account acc : Trigger.new) {
+        Account oldAcc = Trigger.oldMap.get(acc.Id);
+        if (acc.Name != oldAcc.Name) {
+            List<Contact> contactsToUpdate = [SELECT Id, Description FROM Contact WHERE AccountId = :acc.Id];
+            for (Contact con : contactsToUpdate) {
+                con.Description = 'Account name changed to ' + acc.Name;
+            }
+            update contactsToUpdate;
+        }
+    }
+}

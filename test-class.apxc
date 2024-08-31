@@ -1,0 +1,65 @@
+@isTest
+public class UpdateContactOnAccountNameChangeTest {
+
+    @testSetup
+    static void setup() {
+        // Create a test Account
+        Account testAccount = new Account(Name = 'Old Account Name');
+        insert testAccount;
+
+        // Create a test Contact associated with the Account
+        Contact testContact = new Contact(FirstName = 'Test', LastName = 'Contact', AccountId = testAccount.Id);
+        insert testContact;
+    }
+
+    @isTest
+    static void testAccountNameChange() {
+        // Retrieve the account created in the @testSetup method
+        Account acc = [SELECT Id, Name FROM Account WHERE Name = 'Old Account Name' LIMIT 1];
+        
+        // Update the account's name
+        acc.Name = 'New Account Name';
+        update acc;
+        
+        // Retrieve the related contact and verify that the description was updated
+        Contact con = [SELECT Id, Description FROM Contact WHERE AccountId = :acc.Id LIMIT 1];
+        
+        // Assert the description change
+        System.assertEquals('Account name changed to New Account Name', con.Description);
+    }
+
+    @isTest
+    static void testNoAccountNameChange() {
+        // Retrieve the account created in the @testSetup method
+        Account acc = [SELECT Id, Name FROM Account WHERE Name = 'Old Account Name' LIMIT 1];
+        
+        // Update the account without changing the name
+        update acc;
+        
+        // Retrieve the related contact and verify that the description was not updated
+        Contact con = [SELECT Id, Description FROM Contact WHERE AccountId = :acc.Id LIMIT 1];
+        
+        // Assert that the description has not changed
+        System.assertEquals(null, con.Description);
+    }
+
+    @isTest
+    static void testMultipleContacts() {
+        // Retrieve the account created in the @testSetup method
+        Account acc = [SELECT Id, Name FROM Account WHERE Name = 'Old Account Name' LIMIT 1];
+        
+        // Create another contact associated with the same account
+        Contact anotherContact = new Contact(FirstName = 'Another', LastName = 'Contact', AccountId = acc.Id);
+        insert anotherContact;
+        
+        // Update the account's name
+        acc.Name = 'Updated Account Name';
+        update acc;
+        
+        // Retrieve all contacts and verify their descriptions were updated
+        List<Contact> contacts = [SELECT Id, Description FROM Contact WHERE AccountId = :acc.Id];
+        for (Contact con : contacts) {
+            System.assertEquals('Account name changed to Updated Account Name', con.Description);
+        }
+    }
+}
