@@ -1,0 +1,6 @@
+trigger CandidateSharingTrigger on Candidate__c(after insert,after update) {
+if (Trigger.isAfter) {
+     CandidateSharingHandler.handleSharing(Trigger.new,Trigger.oldMap){
+    }
+  }
+}
