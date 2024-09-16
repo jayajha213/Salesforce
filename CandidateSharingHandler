@@ -1,0 +1,27 @@
+Public class CandidateSharingHandler {
+ Public static void handlesharing (list<candidate__c> newcandidates ,Map <Id, Candidate__c> oldCandidateMap) {
+List <Candidate_share> shareToInsert = new List < Candidate_share>();
+List <Candidate_share> shareToDelete = new List < Candidate_share>();
+//Loop through the candidate records 
+For (candidate__c : candidate : newcandidates) {
+If(oldCandidateMap =null ||  oldCandidateMap.get (candidate.Id) == null) {
+   If (candidate.interviewer __c ! =null) {
+       shareToInsert.add(createSharingRecord (candidate.Id,candidate.interviewer__c));
+    }
+}
+//update logic (when the candidate’s interviewer is changed)
+else {
+       Candidate__c oldCandidate = oldCandidateMap.get(candidate.Id);
+//Only act if the interviewer__c field has changed 
+If (candidate.Interviewer__c != oldCandidate.Interviewer__c){
+ //Delete old sharing if there was an old interviewer 
+If (oldCandidate.Interviewer__c !=null){
+shareToDelete.add(CreateDeleteSharingRecord(candidate.Id,oldCandidate.interviewer__c));
+}
+//insert new sharing if there is a new interviewer 
+If (candidate.interviewer__c ! = null) {
+shareToInsert.add (createSharingRecord (candidate.Id, candidate.interviewer__c));
+}
+}
+}
+}
